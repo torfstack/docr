@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+    id("com.google.devtools.ksp") version "1.9.0-1.0.13"
 }
 
 android {
@@ -23,7 +24,10 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
     compileOptions {
@@ -74,4 +78,16 @@ dependencies {
 
     // mlkit
     implementation(libs.play.services.mlkit.document.scanner)
+
+    // room
+    implementation(libs.room.runtime)
+    annotationProcessor(libs.androidx.room.compiler)
+
+    ksp(libs.androidx.room.compiler)
+    implementation(libs.androidx.room.ktx)
+    //implementation(libs.androidx.room.paging)
+    //implementation(libs.androidx.room.rxjava2)
+    //implementation(libs.androidx.room.rxjava3)
+    //implementation(libs.androidx.room.guava)
+    //testImplementation(libs.androidx.room.testing)
 }
