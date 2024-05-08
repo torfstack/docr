@@ -15,7 +15,7 @@ fun captureImageAndScan(
 ) {
     val options = GmsDocumentScannerOptions.Builder()
         .setGalleryImportAllowed(false)
-        .setPageLimit(2)
+        .setPageLimit(1)
         .setResultFormats(RESULT_FORMAT_JPEG)
         .setScannerMode(SCANNER_MODE_FULL)
         .build()

@@ -6,6 +6,7 @@ import androidx.room.Entity
 import androidx.room.Insert
 import androidx.room.PrimaryKey
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.TypeConverter
 import java.util.Date
 
@@ -16,7 +17,7 @@ data class CategoryEntity(
     @ColumnInfo(name = "description") val description: String,
     @ColumnInfo(name = "created") val created: Long,
     @ColumnInfo(name = "last_updated") val lastUpdated: Long,
-    @ColumnInfo(name = "images") val image: String,
+    @ColumnInfo(name = "thumbnail") val thumbnail: ByteArray
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -29,7 +30,6 @@ data class CategoryEntity(
         if (description != other.description) return false
         if (created != other.created) return false
         if (lastUpdated != other.lastUpdated) return false
-        if (image != other.image) return false
 
         return true
     }
@@ -40,18 +40,26 @@ data class CategoryEntity(
         result = 31 * result + description.hashCode()
         result = 31 * result + created.hashCode()
         result = 31 * result + lastUpdated.hashCode()
-        result = 31 * result + image.hashCode()
         return result
     }
 }
 
 @Dao
-interface CategoryDao {
+interface CategoryImageDao {
     @Query("SELECT * FROM category")
     suspend fun getAllCategories(): List<CategoryEntity>
 
     @Insert
     fun insertCategory(category: CategoryEntity)
+
+    @Insert
+    fun insertImage(image: ImageEntity)
+
+    @Transaction
+    fun insertCategoryWithImages(category: CategoryEntity, images: List<ImageEntity>) {
+        insertCategory(category)
+        images.forEach { insertImage(it) }
+    }
 }
 
 class Converters {

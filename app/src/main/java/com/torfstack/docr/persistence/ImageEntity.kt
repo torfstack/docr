@@ -1,22 +1,29 @@
 package com.torfstack.docr.persistence
 
 import androidx.room.ColumnInfo
-import androidx.room.Dao
 import androidx.room.Entity
-import androidx.room.Insert
+import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
-import androidx.room.Query
 
-@Entity(tableName = "image")
-data class Image(
+@Entity(
+    tableName = "image",
+    foreignKeys = [ForeignKey(
+        entity = CategoryEntity::class,
+        parentColumns = ["uid"],
+        childColumns = ["category"],
+        onDelete = ForeignKey.CASCADE
+    )]
+)
+data class ImageEntity(
     @PrimaryKey val uid: String,
-    @ColumnInfo(name = "data", typeAffinity = ColumnInfo.BLOB) val data: ByteArray
+    @ColumnInfo(name = "data", typeAffinity = ColumnInfo.BLOB) val data: ByteArray,
+    @ColumnInfo(name = "category", index = true) val category: String
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as Image
+        other as ImageEntity
 
         if (uid != other.uid) return false
         if (!data.contentEquals(other.data)) return false
@@ -29,13 +36,4 @@ data class Image(
         result = 31 * result + data.contentHashCode()
         return result
     }
-}
-
-@Dao
-interface ImageDao {
-    @Query("SELECT * FROM image WHERE uid = :withId")
-    suspend fun getImage(withId: String): Image
-
-    @Insert
-    fun insertImage(image: Image)
 }

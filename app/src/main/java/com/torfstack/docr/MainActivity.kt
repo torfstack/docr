@@ -39,16 +39,16 @@ import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult
 import com.torfstack.docr.document.captureImageAndScan
 import com.torfstack.docr.persistence.CategoryEntity
 import com.torfstack.docr.persistence.Database
-import com.torfstack.docr.persistence.Image
+import com.torfstack.docr.persistence.ImageEntity
 import com.torfstack.docr.ui.components.Category
 import com.torfstack.docr.ui.theme.DocRTheme
+import com.torfstack.docr.util.toByteArray
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.io.ByteArrayOutputStream
-import java.io.InputStream
 import java.util.UUID
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -62,6 +62,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     @Composable
     @Preview(showBackground = true)
     fun Start(modifier: Modifier = Modifier) {
@@ -81,6 +82,9 @@ class MainActivity : ComponentActivity() {
             cameraProvider.bindToLifecycle(lifecycleOwner, cameraxSelector, preview, imageCapture)
             preview.setSurfaceProvider(previewView.surfaceProvider)
         }
+
+        val categoryViewModel: CategoryViewModel by viewModels()
+
         val scannerLauncher =
             rememberLauncherForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
                 if (result.resultCode == Activity.RESULT_OK) {
@@ -88,42 +92,40 @@ class MainActivity : ComponentActivity() {
                         GmsDocumentScanningResult.fromActivityResultIntent(result.data) // get the result
                     gmsResult?.pages?.let { pages ->
                         GlobalScope.launch {
-                            val imageUri = pages[0].imageUri // do something with the image
-                            val imageBytes =
-                                contentResolver.openInputStream(imageUri)?.use { inputStream ->
-                                    readAllBytes(inputStream)
-                                }
-                            val imageId = UUID.randomUUID().toString()
-                            imageBytes?.let {
-                                Room.databaseBuilder(
-                                    this@MainActivity,
-                                    Database::class.java,
-                                    "database"
-                                )
-                                    .build()
-                                    .imageDao()
-                                    .insertImage(Image(imageId, it))
-                            }
-                            val categoryId = UUID.randomUUID().toString()
-                            Room.databaseBuilder(
+                            val database = Room.databaseBuilder(
                                 this@MainActivity,
                                 Database::class.java,
                                 "database"
+                            ).build()
+
+                            val imageUri = pages[0].imageUri
+                            val imageBytes =
+                                contentResolver.openInputStream(imageUri)?.use { s ->
+                                    s.toByteArray()
+                                }
+
+                            val categoryId = UUID.randomUUID().toString()
+                            val newCategory = CategoryEntity(
+                                categoryId,
+                                "Category",
+                                "Description",
+                                created = System.currentTimeMillis(),
+                                lastUpdated = System.currentTimeMillis(),
+                                thumbnail = imageBytes ?: byteArrayOf()
                             )
-                                .build()
-                                .categoryDao()
-                                .insertCategory(
-                                    CategoryEntity(
-                                        categoryId,
-                                        "Category",
-                                        "Description",
-                                        created = System.currentTimeMillis(),
-                                        lastUpdated = System.currentTimeMillis(),
-                                        image = imageId
-                                    )
+                            val imageId = UUID.randomUUID().toString()
+                            val newImage =
+                                ImageEntity(imageId, imageBytes ?: byteArrayOf(), categoryId)
+                            database
+                                .dao()
+                                .insertCategoryWithImages(
+                                    newCategory,
+                                    listOf(newImage)
                                 )
+                            categoryViewModel.addCategory(newCategory)
                         }
                     }
+
                     gmsResult?.pdf?.let { pdf ->
                         // not yet active, activate in DocumentScan.kt
                         val pdfUri = pdf.uri // do something with the PDF
@@ -131,7 +133,6 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
-        val categoryViewModel: CategoryViewModel by viewModels()
         DocRTheme {
             Column(
                 modifier = Modifier
@@ -139,7 +140,7 @@ class MainActivity : ComponentActivity() {
             ) {
                 val categories = categoryViewModel.uiState.collectAsState()
                 categories.value.forEach {
-                    Category(text = it.name)
+                    Category(it)
                 }
                 Row {
                     Column(
@@ -170,16 +171,24 @@ class CategoryViewModel(application: Application) : AndroidViewModel(application
 
     init {
         viewModelScope.launch {
-            val c =
+            _uiState.update {
                 Room.databaseBuilder(
                     application.applicationContext,
                     Database::class.java,
                     "database"
                 )
                     .build()
-                    .categoryDao()
+                    .dao()
                     .getAllCategories()
-            _uiState.update { c }
+            }
+        }
+    }
+
+    fun addCategory(category: CategoryEntity) {
+        viewModelScope.launch {
+            _uiState.update {
+                it + category
+            }
         }
     }
 }
@@ -192,13 +201,3 @@ private suspend fun Context.getCameraProvider(): ProcessCameraProvider =
             }, ContextCompat.getMainExecutor(this))
         }
     }
-
-private fun readAllBytes(inputStream: InputStream): ByteArray {
-    val buf = ByteArrayOutputStream()
-    var n: Int
-    val buffer = ByteArray(8192)
-    while (inputStream.read(buffer).also { n = it } > 0) {
-        buf.write(buffer, 0, n)
-    }
-    return buf.toByteArray()
-}
