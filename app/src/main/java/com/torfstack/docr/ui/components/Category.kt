@@ -3,6 +3,7 @@ package com.torfstack.docr.ui.components
 import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,29 +13,33 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.AbsoluteRoundedCornerShape
-import androidx.compose.material3.Card
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.torfstack.docr.persistence.CategoryEntity
 import com.torfstack.docr.ui.theme.Typography
+import com.torfstack.docr.views.Screen
 import java.text.DateFormat
 
 @Composable
-fun Category(category: CategoryEntity) {
+fun Category(navController: NavController, category: CategoryEntity) {
     val formatter = DateFormat.getDateInstance()
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 16.dp, end = 16.dp)
     ) {
-        Card(
+        ElevatedCard(
             modifier = Modifier
                 .padding(8.dp)
                 .fillMaxWidth()
+                .clickable {
+                    navController.navigate(Screen.Category.withArgs(category.uid))
+                }
         ) {
             Box(modifier = Modifier.padding(16.dp)) {
                 Row {

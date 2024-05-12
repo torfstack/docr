@@ -49,14 +49,17 @@ interface CategoryImageDao {
     @Query("SELECT * FROM category")
     suspend fun getAllCategories(): List<CategoryEntity>
 
-    @Insert
-    fun insertCategory(category: CategoryEntity)
+    @Query("SELECT * FROM category WHERE uid = :id")
+    suspend fun getCategoryById(id: String): CategoryEntity
 
     @Insert
-    fun insertImage(image: ImageEntity)
+    suspend fun insertCategory(category: CategoryEntity)
+
+    @Insert
+    suspend fun insertImage(image: ImageEntity)
 
     @Transaction
-    fun insertCategoryWithImages(category: CategoryEntity, images: List<ImageEntity>) {
+    suspend fun insertCategoryWithImages(category: CategoryEntity, images: List<ImageEntity>) {
         insertCategory(category)
         images.forEach { insertImage(it) }
     }
