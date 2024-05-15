@@ -1,7 +1,6 @@
 package com.torfstack.docr.views
 
 import android.app.Activity
-import android.app.Application
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
@@ -25,15 +24,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.room.Room
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult
 import com.torfstack.docr.document.captureImageAndScan
+import com.torfstack.docr.model.CategoryViewModel
 import com.torfstack.docr.persistence.CategoryEntity
 import com.torfstack.docr.persistence.DocrDatabase
 import com.torfstack.docr.persistence.ImageEntity
@@ -43,14 +40,11 @@ import com.torfstack.docr.util.findActivity
 import com.torfstack.docr.util.getCameraProvider
 import com.torfstack.docr.util.thumbnail
 import com.torfstack.docr.util.toByteArray
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.UUID
 
 @Composable
-fun CategoryView(navController: NavHostController, viewModel: CategoryViewModel = viewModel()) {
+fun CategoryView(navController: NavHostController, viewModel: CategoryViewModel) {
     val activity = LocalContext.current.findActivity()!!
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -147,25 +141,3 @@ fun CategoryView(navController: NavHostController, viewModel: CategoryViewModel 
     }
 }
 
-class CategoryViewModel(application: Application) : AndroidViewModel(application) {
-    private val _uiState = MutableStateFlow(listOf<CategoryEntity>())
-    val uiState = _uiState.asStateFlow()
-
-    init {
-        viewModelScope.launch {
-            _uiState.update {
-                DocrDatabase.getInstance(application.applicationContext)
-                    .dao()
-                    .getAllCategories()
-            }
-        }
-    }
-
-    fun addCategory(category: CategoryEntity) {
-        viewModelScope.launch {
-            _uiState.update {
-                it + category
-            }
-        }
-    }
-}
