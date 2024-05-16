@@ -29,6 +29,7 @@ import com.torfstack.docr.persistence.DocrDatabase
 import com.torfstack.docr.persistence.ImageEntity
 import com.torfstack.docr.ui.components.Category
 import com.torfstack.docr.ui.theme.DocRTheme
+import com.torfstack.docr.ui.theme.Typography
 import com.torfstack.docr.util.findActivity
 import com.torfstack.docr.util.thumbnail
 import com.torfstack.docr.util.toByteArray
@@ -105,7 +106,11 @@ fun CategoryView(navController: NavHostController, viewModel: CategoryViewModel)
                     Button(
                         onClick = { captureImageAndScan(scannerLauncher, activity) },
                     ) {
-                        Text(text = "New scan")
+                        Text(
+                            fontSize = Typography.bodyLarge.fontSize,
+                            fontWeight = Typography.bodyLarge.fontWeight,
+                            text = "New scan"
+                        )
                     }
                 }
             }

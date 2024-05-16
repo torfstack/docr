@@ -6,7 +6,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ElevatedButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -26,6 +31,7 @@ import androidx.navigation.NavController
 import com.torfstack.docr.model.CategoryViewModel
 import com.torfstack.docr.persistence.DocrDatabase
 import com.torfstack.docr.ui.theme.DocRTheme
+import com.torfstack.docr.ui.theme.Typography
 import com.torfstack.docr.util.toImageBitmap
 import kotlinx.coroutines.launch
 
@@ -44,11 +50,28 @@ fun CategoryDetailView(
                     .background(MaterialTheme.colorScheme.background)
                     .fillMaxSize()
             ) {
+                TextField(
+                    readOnly = true,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 16.dp, end = 64.dp, top = 16.dp, bottom = 16.dp),
+                    label = { Text("ID") },
+                    value = it.uid,
+                    onValueChange = {},
+                    textStyle = Typography.bodySmall,
+                    leadingIcon = {
+                        Icon(Icons.Default.Star, contentDescription = "Category ID")
+                    }
+                )
+
+                Card {
+
+                }
                 var nameText by remember { mutableStateOf(it.name) }
                 TextField(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(8.dp),
+                        .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 8.dp),
                     label = { Text("Name") },
                     value = nameText,
                     onValueChange = {
@@ -59,21 +82,12 @@ fun CategoryDetailView(
                 TextField(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(8.dp),
+                        .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 8.dp),
                     label = { Text("Description") },
                     value = descriptionText,
                     onValueChange = {
                         descriptionText = it
                     })
-
-                TextField(
-                    readOnly = true,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                    value = "ID: ${it.uid}",
-                    onValueChange = {}
-                )
 
                 Image(
                     modifier = Modifier
@@ -88,15 +102,17 @@ fun CategoryDetailView(
                         nameText != it.name || descriptionText != it.description
                     }
                 }
-                ElevatedButton(
+                Button(
                     modifier = Modifier
-                        .align(Alignment.CenterHorizontally),
+                        .padding(16.dp)
+                        .fillMaxWidth(),
                     enabled = didChange,
                     onClick = {
                         viewModel.viewModelScope.launch {
                             val newCategory = it.copy(
                                 name = nameText,
-                                description = descriptionText
+                                description = descriptionText,
+                                lastUpdated = System.currentTimeMillis()
                             )
                             DocrDatabase.getInstance(context)
                                 .dao()
@@ -105,7 +121,12 @@ fun CategoryDetailView(
                         navController.navigate(Screen.Home.route)
                     }
                 ) {
-                    Text(text = "Save")
+                    Icon(Icons.Default.Edit, contentDescription = "Save")
+                    Text(
+                        fontSize = Typography.bodyLarge.fontSize,
+                        fontWeight = Typography.bodyLarge.fontWeight,
+                        text = "Save"
+                    )
                 }
             }
         }
