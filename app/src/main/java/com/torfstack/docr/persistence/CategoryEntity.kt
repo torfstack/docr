@@ -1,5 +1,6 @@
 package com.torfstack.docr.persistence
 
+import androidx.lifecycle.LiveData
 import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Entity
@@ -8,6 +9,7 @@ import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.TypeConverter
+import androidx.room.Update
 import java.util.Date
 
 @Entity(tableName = "category")
@@ -47,16 +49,22 @@ data class CategoryEntity(
 @Dao
 interface CategoryImageDao {
     @Query("SELECT * FROM category")
-    suspend fun getAllCategories(): List<CategoryEntity>
+    fun getAllCategories(): LiveData<List<CategoryEntity>>
+
+    @Query("SELECT * FROM category WHERE uid = :id")
+    fun getCategoryById(id: String): LiveData<CategoryEntity>
 
     @Insert
-    fun insertCategory(category: CategoryEntity)
+    suspend fun insertCategory(category: CategoryEntity)
+
+    @Update
+    suspend fun updateCategory(category: CategoryEntity)
 
     @Insert
-    fun insertImage(image: ImageEntity)
+    suspend fun insertImage(image: ImageEntity)
 
     @Transaction
-    fun insertCategoryWithImages(category: CategoryEntity, images: List<ImageEntity>) {
+    suspend fun insertCategoryWithImages(category: CategoryEntity, images: List<ImageEntity>) {
         insertCategory(category)
         images.forEach { insertImage(it) }
     }
