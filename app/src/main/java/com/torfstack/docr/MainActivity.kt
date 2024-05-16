@@ -30,9 +30,7 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun Navigation() {
-        val viewModelStoreOwner = checkNotNull(LocalViewModelStoreOwner.current) {
-            "No ViewModelStoreOwner was provided via LocalViewModelStoreOwner"
-        }
+        val owner = LocalViewModelStoreOwner.current
         val navController = rememberNavController()
         NavHost(
             navController = navController,
@@ -63,7 +61,7 @@ class MainActivity : ComponentActivity() {
             }
         ) {
             composable(route = Screen.Home.route) {
-                val model: CategoryViewModel = viewModel(it)
+                val model: CategoryViewModel = viewModel(owner!!)
                 CategoryView(
                     navController = navController,
                     viewModel = model
@@ -73,8 +71,9 @@ class MainActivity : ComponentActivity() {
                 route = Screen.Category.route + "/{categoryId}",
                 arguments = listOf(navArgument("categoryId") { type = NavType.StringType }),
             ) {
-                val model: CategoryViewModel = viewModel(it)
+                val model: CategoryViewModel = viewModel(owner!!)
                 CategoryDetailView(
+                    navController = navController,
                     categoryId = it.arguments?.getString("categoryId")!!,
                     viewModel = model
                 )

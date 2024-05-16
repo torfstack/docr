@@ -3,9 +3,6 @@ package com.torfstack.docr.views
 import android.app.Activity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.camera.core.CameraSelector
-import androidx.camera.core.ImageCapture
-import androidx.camera.view.PreviewView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -16,18 +13,14 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
-import androidx.room.Room
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult
 import com.torfstack.docr.document.captureImageAndScan
 import com.torfstack.docr.model.CategoryViewModel
@@ -37,7 +30,6 @@ import com.torfstack.docr.persistence.ImageEntity
 import com.torfstack.docr.ui.components.Category
 import com.torfstack.docr.ui.theme.DocRTheme
 import com.torfstack.docr.util.findActivity
-import com.torfstack.docr.util.getCameraProvider
 import com.torfstack.docr.util.thumbnail
 import com.torfstack.docr.util.toByteArray
 import kotlinx.coroutines.launch
@@ -46,24 +38,7 @@ import java.util.UUID
 @Composable
 fun CategoryView(navController: NavHostController, viewModel: CategoryViewModel) {
     val activity = LocalContext.current.findActivity()!!
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
-    val lensFacing = CameraSelector.LENS_FACING_BACK
-    val lifecycleOwner = LocalLifecycleOwner.current
-    val preview = androidx.camera.core.Preview.Builder().build()
-    val previewView = remember {
-        PreviewView(activity)
-    }
-    val cameraxSelector = CameraSelector.Builder().requireLensFacing(lensFacing).build()
-    val imageCapture = remember {
-        ImageCapture.Builder().build()
-    }
-    LaunchedEffect(lensFacing) {
-        val cameraProvider = activity.getCameraProvider()
-        cameraProvider.unbindAll()
-        cameraProvider.bindToLifecycle(lifecycleOwner, cameraxSelector, preview, imageCapture)
-        preview.setSurfaceProvider(previewView.surfaceProvider)
-    }
+    val uiState by viewModel.uiState.observeAsState(initial = emptyList())
 
     val scannerLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
@@ -71,12 +46,8 @@ fun CategoryView(navController: NavHostController, viewModel: CategoryViewModel)
                 val gmsResult =
                     GmsDocumentScanningResult.fromActivityResultIntent(result.data) // get the result
                 gmsResult?.pages?.let { pages ->
-                    activity.lifecycleScope.launch {
-                        val database = Room.databaseBuilder(
-                            activity,
-                            DocrDatabase::class.java,
-                            "database"
-                        ).build()
+                    viewModel.viewModelScope.launch {
+                        val database = DocrDatabase.getInstance(activity)
 
                         val imageUri = pages[0].imageUri
                         val imageBytes =
@@ -102,7 +73,6 @@ fun CategoryView(navController: NavHostController, viewModel: CategoryViewModel)
                                 newCategory,
                                 listOf(newImage)
                             )
-                        viewModel.addCategory(newCategory)
                     }
                 }
 
@@ -120,7 +90,9 @@ fun CategoryView(navController: NavHostController, viewModel: CategoryViewModel)
         ) {
             val categories = uiState
             categories.forEach {
-                Category(navController = navController, category = it)
+                Category(category = it) {
+                    navController.navigate(Screen.Category.withArgs(it.uid))
+                }
             }
             Row {
                 Column(

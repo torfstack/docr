@@ -20,14 +20,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import com.torfstack.docr.persistence.CategoryEntity
 import com.torfstack.docr.ui.theme.Typography
-import com.torfstack.docr.views.Screen
 import java.text.DateFormat
 
 @Composable
-fun Category(navController: NavController, category: CategoryEntity) {
+fun Category(category: CategoryEntity, onClick: () -> Unit) {
     val formatter = DateFormat.getDateInstance()
     Row(
         modifier = Modifier
@@ -37,9 +35,7 @@ fun Category(navController: NavController, category: CategoryEntity) {
             modifier = Modifier
                 .padding(8.dp)
                 .fillMaxWidth()
-                .clickable {
-                    navController.navigate(Screen.Category.withArgs(category.uid))
-                }
+                .clickable { onClick() }
         ) {
             Box(modifier = Modifier.padding(16.dp)) {
                 Row {
