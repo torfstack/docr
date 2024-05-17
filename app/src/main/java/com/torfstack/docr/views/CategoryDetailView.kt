@@ -141,8 +141,8 @@ fun CategoryDetailView(
                         onClick = {
                             viewModel.viewModelScope.launch {
                                 val newCategory = it.copy(
-                                    name = nameText,
-                                    description = descriptionText,
+                                    name = nameText.trim(),
+                                    description = descriptionText.trim(),
                                     lastUpdated = System.currentTimeMillis()
                                 )
                                 DocrDatabase.getInstance(context)
