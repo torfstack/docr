@@ -4,18 +4,19 @@ import android.app.Activity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -29,7 +30,6 @@ import com.torfstack.docr.persistence.DocrDatabase
 import com.torfstack.docr.persistence.ImageEntity
 import com.torfstack.docr.ui.components.Category
 import com.torfstack.docr.ui.theme.DocRTheme
-import com.torfstack.docr.ui.theme.Typography
 import com.torfstack.docr.util.findActivity
 import com.torfstack.docr.util.thumbnail
 import com.torfstack.docr.util.toByteArray
@@ -85,32 +85,39 @@ fun CategoryView(navController: NavHostController, viewModel: CategoryViewModel)
         }
 
     DocRTheme {
-        Column(
-            modifier = Modifier
-                .background(MaterialTheme.colorScheme.background)
-        ) {
-            val categories = uiState
-            categories.forEach {
-                Category(category = it) {
-                    navController.navigate(Screen.Category.withArgs(it.uid))
+        Scaffold(
+            bottomBar = {
+                BottomAppBar(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                ) {
+                    Spacer(modifier = Modifier.weight(1f))
+                    IconButton(
+                        modifier = Modifier
+                            .padding(end = 32.dp)
+                            .background(
+                                color = MaterialTheme.colorScheme.background,
+                                shape = MaterialTheme.shapes.small,
+                            ),
+                        onClick = {
+                            captureImageAndScan(scannerLauncher, activity)
+                        }) {
+                        Icon(
+                            Icons.Default.Add,
+                            contentDescription = "Add Category"
+                        )
+                    }
                 }
             }
-            Row {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(bottom = 128.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Bottom,
-                ) {
-                    Button(
-                        onClick = { captureImageAndScan(scannerLauncher, activity) },
-                    ) {
-                        Text(
-                            fontSize = Typography.bodyLarge.fontSize,
-                            fontWeight = Typography.bodyLarge.fontWeight,
-                            text = "New scan"
-                        )
+        ) { innerPadding ->
+            Column(
+                modifier = Modifier
+                    .background(MaterialTheme.colorScheme.background)
+                    .padding(innerPadding)
+            ) {
+                val categories = uiState
+                categories.forEach {
+                    Category(category = it) {
+                        navController.navigate(Screen.Category.withArgs(it.uid))
                     }
                 }
             }
