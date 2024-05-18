@@ -34,6 +34,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,7 +50,6 @@ import com.torfstack.docr.ui.theme.DocRTheme
 import com.torfstack.docr.ui.theme.Typography
 import com.torfstack.docr.util.toImageBitmap
 import kotlinx.coroutines.launch
-import java.io.IOException
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -61,6 +61,7 @@ fun CategoryDetailView(
 ) {
     val context = LocalContext.current
     val category by viewModel.uiState.observeAsState()
+    val scope = rememberCoroutineScope()
     category?.find { it.uid == categoryId }?.let {
         DocRTheme {
             Scaffold(
@@ -74,7 +75,12 @@ fun CategoryDetailView(
                             }
                         },
                         actions = {
-                            IconButton(onClick = { shareDocument(context, it) }) {
+                            IconButton(onClick = {
+                                viewModel.viewModelScope.launch {
+                                    shareDocument(context, it)
+                                }
+                            })
+                            {
                                 Icon(Icons.Default.Share, contentDescription = "Share")
                             }
                         }
@@ -173,11 +179,24 @@ private val collection =
         MediaStore.VOLUME_EXTERNAL
     ) else MediaStore.Images.Media.EXTERNAL_CONTENT_URI
 
-fun shareDocument(context: Context, entity: CategoryEntity) {
-    try {
-        val share = Intent(Intent.ACTION_SEND)
-        share.setType("image/jpeg")
+suspend fun shareDocument(context: Context, entity: CategoryEntity) {
+    val images = DocrDatabase.getInstance(context)
+        .dao()
+        .getImagesForCategory(entity.uid)
 
+    if (images.isEmpty()) {
+        Log.i("Share", "No images found for category ${entity.uid}")
+        return
+    }
+
+    val share = if (images.size > 1) {
+        Intent(Intent.ACTION_SEND_MULTIPLE)
+    } else {
+        Intent(Intent.ACTION_SEND)
+    }
+    share.setType("image/jpeg")
+
+    val uris = images.map { image ->
         val values = ContentValues().apply {
             val replaced = entity.name.replace(" ", "_")
             put(MediaStore.Images.Media.DISPLAY_NAME, "$replaced.jpg")
@@ -190,7 +209,7 @@ fun shareDocument(context: Context, entity: CategoryEntity) {
         val uri = context.contentResolver.insert(collection, values)
         uri?.let {
             context.contentResolver.openOutputStream(it)?.use { os ->
-                os.write(entity.thumbnail)
+                os.write(image.data)
             }
             values.clear()
             values.put(MediaStore.Images.Media.IS_PENDING, 0)
@@ -198,10 +217,14 @@ fun shareDocument(context: Context, entity: CategoryEntity) {
         } ?: {
             Log.i("Share", "Uri is null")
         }
-
-        share.putExtra(Intent.EXTRA_STREAM, uri)
-        startActivity(context, Intent.createChooser(share, "Share Image"), null)
-    } catch (e: IOException) {
-        e.printStackTrace()
+        uri
     }
+
+    if (uris.size > 1) {
+        share.putParcelableArrayListExtra(Intent.EXTRA_STREAM, ArrayList(uris))
+    } else {
+        share.putExtra(Intent.EXTRA_STREAM, uris[0])
+    }
+
+    startActivity(context, Intent.createChooser(share, "Share Image"), null)
 }

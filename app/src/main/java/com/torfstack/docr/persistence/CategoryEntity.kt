@@ -63,6 +63,9 @@ interface CategoryImageDao {
     @Insert
     suspend fun insertImage(image: ImageEntity)
 
+    @Query("SELECT * FROM image WHERE category = :categoryId")
+    suspend fun getImagesForCategory(categoryId: String): List<ImageEntity>
+
     @Transaction
     suspend fun insertCategoryWithImages(category: CategoryEntity, images: List<ImageEntity>) {
         insertCategory(category)
