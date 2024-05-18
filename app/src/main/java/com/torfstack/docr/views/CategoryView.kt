@@ -51,10 +51,10 @@ fun CategoryView(navController: NavHostController, viewModel: CategoryViewModel)
                         val database = DocrDatabase.getInstance(activity)
 
                         val imageUri = pages[0].imageUri
-                        val imageBytes =
+                        val thumbnailBytes =
                             activity.contentResolver.openInputStream(imageUri)?.use { s ->
                                 thumbnail(s.toByteArray())
-                            }
+                            } ?: return@launch
 
                         val categoryId = UUID.randomUUID().toString()
                         val newCategory = CategoryEntity(
@@ -63,16 +63,24 @@ fun CategoryView(navController: NavHostController, viewModel: CategoryViewModel)
                             "Description",
                             created = System.currentTimeMillis(),
                             lastUpdated = System.currentTimeMillis(),
-                            thumbnail = imageBytes ?: byteArrayOf()
+                            thumbnail = thumbnailBytes
                         )
-                        val imageId = UUID.randomUUID().toString()
-                        val newImage =
-                            ImageEntity(imageId, imageBytes ?: byteArrayOf(), categoryId)
+
+                        val images = mutableListOf<ImageEntity>()
+                        pages.forEach { page ->
+                            val imageId = UUID.randomUUID().toString()
+                            val pageBytes =
+                                activity.contentResolver.openInputStream(page.imageUri)?.use { s ->
+                                    s.toByteArray()
+                                } ?: return@launch
+                            images.add(ImageEntity(imageId, pageBytes, categoryId))
+                        }
+
                         database
                             .dao()
                             .insertCategoryWithImages(
                                 newCategory,
-                                listOf(newImage)
+                                images
                             )
                     }
                 }
