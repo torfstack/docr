@@ -88,14 +88,14 @@ fun CategoryView(navController: NavHostController, viewModel: CategoryViewModel)
         Scaffold(
             bottomBar = {
                 BottomAppBar(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    containerColor = MaterialTheme.colorScheme.surface,
                 ) {
                     Spacer(modifier = Modifier.weight(1f))
                     IconButton(
                         modifier = Modifier
                             .padding(end = 32.dp)
                             .background(
-                                color = MaterialTheme.colorScheme.background,
+                                color = MaterialTheme.colorScheme.primaryContainer,
                                 shape = MaterialTheme.shapes.small,
                             ),
                         onClick = {
