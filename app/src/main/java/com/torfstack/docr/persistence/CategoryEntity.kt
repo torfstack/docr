@@ -3,6 +3,7 @@ package com.torfstack.docr.persistence
 import androidx.lifecycle.LiveData
 import androidx.room.ColumnInfo
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Entity
 import androidx.room.Insert
 import androidx.room.PrimaryKey
@@ -65,6 +66,19 @@ interface CategoryImageDao {
 
     @Query("SELECT * FROM image WHERE category = :categoryId")
     suspend fun getImagesForCategory(categoryId: String): List<ImageEntity>
+
+    @Delete
+    suspend fun deleteCategory(category: CategoryEntity)
+
+
+    @Delete
+    suspend fun deleteImage(image: ImageEntity)
+
+    @Transaction
+    suspend fun deleteCategoryWithImages(category: CategoryEntity) {
+        deleteCategory(category)
+        getImagesForCategory(category.uid).forEach { deleteImage(it) }
+    }
 
     @Transaction
     suspend fun insertCategoryWithImages(category: CategoryEntity, images: List<ImageEntity>) {
