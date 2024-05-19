@@ -4,6 +4,9 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.net.Uri
+import android.os.Build
+import android.provider.MediaStore
 import androidx.activity.ComponentActivity
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.compose.ui.graphics.ImageBitmap
@@ -59,3 +62,8 @@ fun thumbnail(bytes: ByteArray): ByteArray {
     return stream.toByteArray()
 }
 
+fun imageCollection(): Uri {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) MediaStore.Images.Media.getContentUri(
+        MediaStore.VOLUME_EXTERNAL
+    ) else MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+}

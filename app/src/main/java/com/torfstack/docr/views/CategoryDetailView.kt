@@ -1,12 +1,5 @@
 package com.torfstack.docr.views
 
-import android.content.ContentValues
-import android.content.Context
-import android.content.Intent
-import android.os.Build
-import android.os.Environment
-import android.provider.MediaStore
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -15,9 +8,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -29,18 +24,17 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.torfstack.docr.model.CategoryViewModel
@@ -61,7 +55,8 @@ fun CategoryDetailView(
 ) {
     val context = LocalContext.current
     val category by viewModel.uiState.observeAsState()
-    val scope = rememberCoroutineScope()
+    val openDeleteDialog = remember { mutableStateOf(false) }
+
     category?.find { it.uid == categoryId }?.let {
         DocRTheme {
             Scaffold(
@@ -77,7 +72,15 @@ fun CategoryDetailView(
                         actions = {
                             IconButton(onClick = {
                                 viewModel.viewModelScope.launch {
-                                    shareDocument(context, it)
+                                    openDeleteDialog.value = true
+                                }
+                            })
+                            {
+                                Icon(Icons.Default.Delete, contentDescription = "Delete")
+                            }
+                            IconButton(onClick = {
+                                viewModel.viewModelScope.launch {
+                                    viewModel.shareCategory(context, it)
                                 }
                             })
                             {
@@ -170,61 +173,40 @@ fun CategoryDetailView(
                     }
                 }
             }
+            when {
+                openDeleteDialog.value -> {
+                    DeleteDialog(it, viewModel, openDeleteDialog, navController)
+                }
+            }
         }
     }
 }
 
-private val collection =
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) MediaStore.Images.Media.getContentUri(
-        MediaStore.VOLUME_EXTERNAL
-    ) else MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-
-suspend fun shareDocument(context: Context, entity: CategoryEntity) {
-    val images = DocrDatabase.getInstance(context)
-        .dao()
-        .getImagesForCategory(entity.uid)
-
-    if (images.isEmpty()) {
-        Log.i("Share", "No images found for category ${entity.uid}")
-        return
-    }
-
-    val share = if (images.size > 1) {
-        Intent(Intent.ACTION_SEND_MULTIPLE)
-    } else {
-        Intent(Intent.ACTION_SEND)
-    }
-    share.setType("image/jpeg")
-
-    val uris = images.map { image ->
-        val values = ContentValues().apply {
-            val replaced = entity.name.replace(" ", "_")
-            put(MediaStore.Images.Media.DISPLAY_NAME, "$replaced.jpg")
-            put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
-            put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
-            put(MediaStore.Images.Media.IS_PENDING, 1)
-            put(MediaStore.Images.Media.DATE_ADDED, System.currentTimeMillis() / 1000)
-            put(MediaStore.Images.Media.DATE_TAKEN, entity.created / 1000)
-        }
-        val uri = context.contentResolver.insert(collection, values)
-        uri?.let {
-            context.contentResolver.openOutputStream(it)?.use { os ->
-                os.write(image.data)
+@Composable
+fun DeleteDialog(
+    entity: CategoryEntity,
+    viewModel: CategoryViewModel,
+    open: MutableState<Boolean>,
+    navController: NavController
+) {
+    val context = LocalContext.current
+    AlertDialog(
+        onDismissRequest = { open.value = false },
+        confirmButton = {
+            Button(
+                onClick = {
+                    viewModel.viewModelScope.launch {
+                        open.value = false
+                        navController.popBackStack()
+                        viewModel.deleteCategory(context, entity)
+                    }
+                },
+            ) {
+                Text("Delete")
             }
-            values.clear()
-            values.put(MediaStore.Images.Media.IS_PENDING, 0)
-            context.contentResolver.update(uri, values, null, null)
-        } ?: {
-            Log.i("Share", "Uri is null")
-        }
-        uri
-    }
-
-    if (uris.size > 1) {
-        share.putParcelableArrayListExtra(Intent.EXTRA_STREAM, ArrayList(uris))
-    } else {
-        share.putExtra(Intent.EXTRA_STREAM, uris[0])
-    }
-
-    startActivity(context, Intent.createChooser(share, "Share Image"), null)
+        },
+        title = { Text("Delete document") },
+        text = { Text("Are you sure you want to delete this document?") },
+        icon = { Icon(Icons.Default.Delete, contentDescription = "Delete icon") },
+    )
 }
