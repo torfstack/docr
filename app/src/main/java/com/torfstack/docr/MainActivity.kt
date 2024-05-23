@@ -73,11 +73,13 @@ class MainActivity : ComponentActivity() {
                 route = Screen.Category.route + "/{categoryId}",
                 arguments = listOf(navArgument("categoryId") { type = NavType.StringType }),
             ) {
+                val id = it.arguments?.getString("categoryId")!!
                 val model: CategoryDetailViewModel = viewModel(
                     viewModelStoreOwner = owner!!,
+                    key = id,
                     factory = CategoryDetailViewModel.Factory(
                         application,
-                        it.arguments?.getString("categoryId")!!
+                        id,
                     ),
                 )
                 CategoryDetailView(
