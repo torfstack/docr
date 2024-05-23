@@ -17,6 +17,7 @@ import androidx.room.PrimaryKey
 data class ImageEntity(
     @PrimaryKey val uid: String,
     @ColumnInfo(name = "data", typeAffinity = ColumnInfo.BLOB) val data: ByteArray,
+    @ColumnInfo(name = "downscaled", typeAffinity = ColumnInfo.BLOB) val downscaled: ByteArray,
     @ColumnInfo(name = "category") val category: String
 ) {
     override fun equals(other: Any?): Boolean {

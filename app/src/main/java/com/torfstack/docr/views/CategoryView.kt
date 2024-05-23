@@ -30,6 +30,7 @@ import com.torfstack.docr.persistence.DocrDatabase
 import com.torfstack.docr.persistence.ImageEntity
 import com.torfstack.docr.ui.components.Category
 import com.torfstack.docr.ui.theme.DocRTheme
+import com.torfstack.docr.util.downscaled
 import com.torfstack.docr.util.findActivity
 import com.torfstack.docr.util.thumbnail
 import com.torfstack.docr.util.toByteArray
@@ -69,11 +70,11 @@ fun CategoryView(navController: NavHostController, viewModel: CategoryViewModel)
                         val images = mutableListOf<ImageEntity>()
                         pages.forEach { page ->
                             val imageId = UUID.randomUUID().toString()
-                            val pageBytes =
-                                activity.contentResolver.openInputStream(page.imageUri)?.use { s ->
-                                    s.toByteArray()
-                                } ?: return@launch
-                            images.add(ImageEntity(imageId, pageBytes, categoryId))
+                            activity.contentResolver.openInputStream(page.imageUri)?.use { s ->
+                                val bytes = s.toByteArray()
+                                val downScaled = downscaled(bytes)
+                                images.add(ImageEntity(imageId, bytes, downScaled, categoryId))
+                            }
                         }
 
                         database
