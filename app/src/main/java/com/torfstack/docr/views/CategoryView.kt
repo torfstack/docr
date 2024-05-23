@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult
+import com.torfstack.docr.crypto.DocrCrypto
 import com.torfstack.docr.document.captureImageAndScan
 import com.torfstack.docr.model.CategoryViewModel
 import com.torfstack.docr.persistence.CategoryEntity
@@ -64,7 +65,7 @@ fun CategoryView(navController: NavHostController, viewModel: CategoryViewModel)
                             "Description",
                             created = System.currentTimeMillis(),
                             lastUpdated = System.currentTimeMillis(),
-                            thumbnail = thumbnailBytes
+                            thumbnail = DocrCrypto.encrypt(thumbnailBytes)
                         )
 
                         val images = mutableListOf<ImageEntity>()
@@ -73,7 +74,14 @@ fun CategoryView(navController: NavHostController, viewModel: CategoryViewModel)
                             activity.contentResolver.openInputStream(page.imageUri)?.use { s ->
                                 val bytes = s.toByteArray()
                                 val downScaled = downscaled(bytes)
-                                images.add(ImageEntity(imageId, bytes, downScaled, categoryId))
+                                images.add(
+                                    ImageEntity(
+                                        imageId,
+                                        DocrCrypto.encrypt(bytes),
+                                        DocrCrypto.encrypt(downScaled),
+                                        categoryId
+                                    )
+                                )
                             }
                         }
 

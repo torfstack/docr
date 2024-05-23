@@ -39,6 +39,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
+import com.torfstack.docr.crypto.DocrCrypto
 import com.torfstack.docr.model.CategoryDetailViewModel
 import com.torfstack.docr.persistence.CategoryEntity
 import com.torfstack.docr.persistence.DocrDatabase
@@ -87,7 +88,10 @@ fun CategoryDetailView(
                                         val newCategory = it.copy(
                                             name = nameText.trim(),
                                             description = descriptionText.trim(),
-                                            lastUpdated = System.currentTimeMillis()
+                                            lastUpdated = System.currentTimeMillis(),
+                                            thumbnail = DocrCrypto.encrypt(
+                                                category!!.thumbnail
+                                            )
                                         )
                                         DocrDatabase.getInstance(context)
                                             .dao()
