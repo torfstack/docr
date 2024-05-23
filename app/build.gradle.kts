@@ -30,7 +30,6 @@ android {
             applicationIdSuffix = ".debug"
             versionNameSuffix = "-debug"
             manifestPlaceholders["appLabel"] = "DocR-debug"
-            manifestPlaceholders["appIdSuffix"] = ".debug"
         }
         release {
             isMinifyEnabled = true
@@ -41,7 +40,6 @@ android {
             )
             signingConfig = signingConfigs.getByName("debug")
             manifestPlaceholders["appLabel"] = "DocR"
-            manifestPlaceholders["appIdSuffix"] = ""
         }
     }
     compileOptions {
