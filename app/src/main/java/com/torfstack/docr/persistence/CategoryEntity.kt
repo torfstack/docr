@@ -1,16 +1,9 @@
 package com.torfstack.docr.persistence
 
-import androidx.lifecycle.LiveData
 import androidx.room.ColumnInfo
-import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Entity
-import androidx.room.Insert
 import androidx.room.PrimaryKey
-import androidx.room.Query
-import androidx.room.Transaction
 import androidx.room.TypeConverter
-import androidx.room.Update
 import java.util.Date
 
 @Entity(tableName = "category")
@@ -47,45 +40,6 @@ data class CategoryEntity(
     }
 }
 
-@Dao
-interface CategoryImageDao {
-    @Query("SELECT * FROM category")
-    fun getAllCategories(): LiveData<List<CategoryEntity>>
-
-    @Query("SELECT * FROM category WHERE uid = :id")
-    fun getCategoryById(id: String): LiveData<CategoryEntity>
-
-    @Insert
-    suspend fun insertCategory(category: CategoryEntity)
-
-    @Update
-    suspend fun updateCategory(category: CategoryEntity)
-
-    @Insert
-    suspend fun insertImage(image: ImageEntity)
-
-    @Query("SELECT * FROM image WHERE category = :categoryId")
-    suspend fun getImagesForCategory(categoryId: String): List<ImageEntity>
-
-    @Delete
-    suspend fun deleteCategory(category: CategoryEntity)
-
-
-    @Delete
-    suspend fun deleteImage(image: ImageEntity)
-
-    @Transaction
-    suspend fun deleteCategoryWithImages(category: CategoryEntity) {
-        deleteCategory(category)
-        getImagesForCategory(category.uid).forEach { deleteImage(it) }
-    }
-
-    @Transaction
-    suspend fun insertCategoryWithImages(category: CategoryEntity, images: List<ImageEntity>) {
-        insertCategory(category)
-        images.forEach { insertImage(it) }
-    }
-}
 
 class Converters {
     @TypeConverter

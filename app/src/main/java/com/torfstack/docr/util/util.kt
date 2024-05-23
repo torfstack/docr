@@ -54,11 +54,26 @@ fun Bitmap.thumbnail(): Bitmap {
     return Bitmap.createScaledBitmap(this, thumbnailWidth, thumbnailHeight, false)
 }
 
+fun Bitmap.downscaled(): Bitmap {
+    val aspectRatio = width.toFloat() / height.toFloat()
+    val thumbnailWidth = 512
+    val thumbnailHeight = (thumbnailWidth / aspectRatio).toInt()
+    return Bitmap.createScaledBitmap(this, thumbnailWidth, thumbnailHeight, false)
+}
+
 fun thumbnail(bytes: ByteArray): ByteArray {
     val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
     val thumbnail = bitmap.thumbnail()
     val stream = ByteArrayOutputStream()
     thumbnail.compress(Bitmap.CompressFormat.JPEG, 100, stream)
+    return stream.toByteArray()
+}
+
+fun downscaled(bytes: ByteArray): ByteArray {
+    val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+    val downscaled = bitmap.downscaled()
+    val stream = ByteArrayOutputStream()
+    downscaled.compress(Bitmap.CompressFormat.JPEG, 100, stream)
     return stream.toByteArray()
 }
 

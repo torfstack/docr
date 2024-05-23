@@ -6,10 +6,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.AlertDialog
@@ -37,7 +39,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
-import com.torfstack.docr.model.CategoryViewModel
+import com.torfstack.docr.model.CategoryDetailViewModel
 import com.torfstack.docr.persistence.CategoryEntity
 import com.torfstack.docr.persistence.DocrDatabase
 import com.torfstack.docr.ui.theme.DocRTheme
@@ -45,19 +47,28 @@ import com.torfstack.docr.ui.theme.Typography
 import com.torfstack.docr.util.toImageBitmap
 import kotlinx.coroutines.launch
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CategoryDetailView(
     navController: NavController,
-    categoryId: String,
-    viewModel: CategoryViewModel,
+    viewModel: CategoryDetailViewModel,
 ) {
     val context = LocalContext.current
-    val category by viewModel.uiState.observeAsState()
+    val category by viewModel.category.observeAsState()
+    val images by viewModel.images.observeAsState()
+
     val openDeleteDialog = remember { mutableStateOf(false) }
 
-    category?.find { it.uid == categoryId }?.let {
+    category?.let {
+        var nameText by remember { mutableStateOf(it.name) }
+        var descriptionText by remember { mutableStateOf(it.description) }
+
+        val didChange by remember {
+            derivedStateOf {
+                nameText != it.name || descriptionText != it.description
+            }
+        }
+
         DocRTheme {
             Scaffold(
                 topBar = {
@@ -70,6 +81,25 @@ fun CategoryDetailView(
                             }
                         },
                         actions = {
+                            IconButton(
+                                onClick = {
+                                    viewModel.viewModelScope.launch {
+                                        val newCategory = it.copy(
+                                            name = nameText.trim(),
+                                            description = descriptionText.trim(),
+                                            lastUpdated = System.currentTimeMillis()
+                                        )
+                                        DocrDatabase.getInstance(context)
+                                            .dao()
+                                            .updateCategory(newCategory)
+                                    }
+                                    navController.navigate(Screen.Home.route)
+                                },
+                                enabled = didChange
+                            )
+                            {
+                                Icon(Icons.Default.Done, contentDescription = "Save")
+                            }
                             IconButton(onClick = {
                                 viewModel.viewModelScope.launch {
                                     openDeleteDialog.value = true
@@ -95,6 +125,10 @@ fun CategoryDetailView(
                         .padding(innerPadding)
                         .background(MaterialTheme.colorScheme.background)
                         .fillMaxSize()
+                        .verticalScroll(
+                            enabled = true,
+                            state = rememberScrollState(0)
+                        )
                 ) {
                     TextField(
                         readOnly = true,
@@ -110,7 +144,6 @@ fun CategoryDetailView(
                         }
                     )
 
-                    var nameText by remember { mutableStateOf(it.name) }
                     TextField(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -121,7 +154,6 @@ fun CategoryDetailView(
                             nameText = it
                         })
 
-                    var descriptionText by remember { mutableStateOf(it.description) }
                     TextField(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -132,45 +164,22 @@ fun CategoryDetailView(
                             descriptionText = it
                         })
 
-                    Image(
+                    Column(
                         modifier = Modifier
-                            .align(Alignment.CenterHorizontally)
-                            .padding(8.dp),
-                        bitmap = it.thumbnail.toImageBitmap(),
-                        contentDescription = "Category Image"
-                    )
-
-                    val didChange by remember {
-                        derivedStateOf {
-                            nameText != it.name || descriptionText != it.description
-                        }
-                    }
-                    Button(
-                        modifier = Modifier
-                            .padding(16.dp)
-                            .fillMaxWidth(),
-                        enabled = didChange,
-                        onClick = {
-                            viewModel.viewModelScope.launch {
-                                val newCategory = it.copy(
-                                    name = nameText.trim(),
-                                    description = descriptionText.trim(),
-                                    lastUpdated = System.currentTimeMillis()
-                                )
-                                DocrDatabase.getInstance(context)
-                                    .dao()
-                                    .updateCategory(newCategory)
-                            }
-                            navController.navigate(Screen.Home.route)
-                        }
+                            .fillMaxWidth()
+                            .padding(start = 96.dp, end = 96.dp)
                     ) {
-                        Icon(Icons.Default.Edit, contentDescription = "Save")
-                        Text(
-                            fontSize = Typography.bodyLarge.fontSize,
-                            fontWeight = Typography.bodyLarge.fontWeight,
-                            text = "Save"
-                        )
+                        images?.forEach {
+                            Image(
+                                modifier = Modifier
+                                    .align(Alignment.CenterHorizontally)
+                                    .padding(8.dp),
+                                bitmap = it.downscaled.toImageBitmap(),
+                                contentDescription = "Category Image"
+                            )
+                        }
                     }
+
                 }
             }
             when {
@@ -185,7 +194,7 @@ fun CategoryDetailView(
 @Composable
 fun DeleteDialog(
     entity: CategoryEntity,
-    viewModel: CategoryViewModel,
+    viewModel: CategoryDetailViewModel,
     open: MutableState<Boolean>,
     navController: NavController
 ) {

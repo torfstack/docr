@@ -13,6 +13,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.torfstack.docr.model.CategoryDetailViewModel
 import com.torfstack.docr.model.CategoryViewModel
 import com.torfstack.docr.views.CategoryDetailView
 import com.torfstack.docr.views.CategoryView
@@ -72,10 +73,15 @@ class MainActivity : ComponentActivity() {
                 route = Screen.Category.route + "/{categoryId}",
                 arguments = listOf(navArgument("categoryId") { type = NavType.StringType }),
             ) {
-                val model: CategoryViewModel = viewModel(owner!!)
+                val model: CategoryDetailViewModel = viewModel(
+                    viewModelStoreOwner = owner!!,
+                    factory = CategoryDetailViewModel.Factory(
+                        application,
+                        it.arguments?.getString("categoryId")!!
+                    ),
+                )
                 CategoryDetailView(
                     navController = navController,
-                    categoryId = it.arguments?.getString("categoryId")!!,
                     viewModel = model
                 )
             }

@@ -25,7 +25,7 @@
 
         <provider
             android:name="com.torfstack.docr.DocrFileProvider"
-            android:authorities="com.torfstack.docr.fileprovider"
+            android:authorities="com.torfstack.docr.fileprovider${appIdSuffix}"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data

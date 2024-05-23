@@ -10,6 +10,7 @@ import androidx.room.TypeConverters
 @TypeConverters(Converters::class)
 abstract class DocrDatabase : RoomDatabase() {
     abstract fun dao(): CategoryImageDao
+    abstract fun liveDataDao(): LiveDataDao
 
     companion object {
         @Volatile
