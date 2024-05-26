@@ -70,13 +70,17 @@ class MainActivity : ComponentActivity() {
                 )
             }
             composable(
-                route = Screen.Category.route + "/{categoryId}",
-                arguments = listOf(navArgument("categoryId") { type = NavType.StringType }),
+                route = Screen.Category.route + "/{categoryId}/{version}",
+                arguments = listOf(
+                    navArgument("categoryId") { type = NavType.StringType },
+                    navArgument("version") { type = NavType.IntType }
+                ),
             ) {
                 val id = it.arguments?.getString("categoryId")!!
+                val version = it.arguments?.getInt("version")!!
                 val model: CategoryDetailViewModel = viewModel(
                     viewModelStoreOwner = owner!!,
-                    key = id,
+                    key = "$id/$version",
                     factory = CategoryDetailViewModel.Factory(
                         application,
                         id,

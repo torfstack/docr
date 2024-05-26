@@ -12,7 +12,8 @@ data class CategoryEntity(
     @ColumnInfo(name = "description") val description: String,
     @ColumnInfo(name = "created") val created: Long,
     @ColumnInfo(name = "last_updated") val lastUpdated: Long,
-    @ColumnInfo(name = "thumbnail") internal val thumbnailInternal: ByteArray
+    @ColumnInfo(name = "thumbnail") internal val thumbnailInternal: ByteArray,
+    @ColumnInfo(name = "version") internal val version: Int
 ) {
 
     val thumbnail by lazy {
@@ -30,6 +31,7 @@ data class CategoryEntity(
         if (description != other.description) return false
         if (created != other.created) return false
         if (lastUpdated != other.lastUpdated) return false
+        if (version != other.version) return false
 
         return true
     }
@@ -40,6 +42,7 @@ data class CategoryEntity(
         result = 31 * result + description.hashCode()
         result = 31 * result + created.hashCode()
         result = 31 * result + lastUpdated.hashCode()
+        result = 31 * result + version.hashCode()
         return result
     }
 }

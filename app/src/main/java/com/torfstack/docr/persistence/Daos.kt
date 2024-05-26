@@ -35,7 +35,12 @@ interface CategoryImageDao {
     }
 
     @Update
-    suspend fun updateCategory(category: CategoryEntity)
+    suspend fun updateCategoryInternal(category: CategoryEntity)
+
+    @Update
+    suspend fun updateCategory(category: CategoryEntity) {
+        updateCategoryInternal(category.copy(version = category.version + 1))
+    }
 
     @Insert
     suspend fun insertImageInternal(image: ImageEntity)

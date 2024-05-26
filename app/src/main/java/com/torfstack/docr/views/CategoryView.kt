@@ -64,7 +64,8 @@ fun CategoryView(navController: NavHostController, viewModel: CategoryViewModel)
                             "Description",
                             created = System.currentTimeMillis(),
                             lastUpdated = System.currentTimeMillis(),
-                            thumbnailInternal = thumbnailBytes
+                            thumbnailInternal = thumbnailBytes,
+                            version = 0
                         )
 
                         val images = mutableListOf<ImageEntity>()
@@ -132,7 +133,10 @@ fun CategoryView(navController: NavHostController, viewModel: CategoryViewModel)
             ) {
                 categories.forEach {
                     Category(category = it) {
-                        navController.navigate(Screen.Category.withArgs(it.uid))
+                        navController.navigate(
+                            Screen.Category
+                                .withArgs(it.uid, it.version)
+                        )
                     }
                 }
             }
