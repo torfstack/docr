@@ -2,6 +2,7 @@ package com.torfstack.docr.views
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -9,7 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Share
@@ -41,7 +42,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.torfstack.docr.model.CategoryDetailViewModel
 import com.torfstack.docr.persistence.CategoryEntity
-import com.torfstack.docr.persistence.DocrDatabase
 import com.torfstack.docr.ui.theme.DocRTheme
 import com.torfstack.docr.ui.theme.Typography
 import com.torfstack.docr.util.toImageBitmap
@@ -77,7 +77,10 @@ fun CategoryDetailView(
                         colors = TopAppBarDefaults.topAppBarColors(),
                         navigationIcon = {
                             IconButton(onClick = { navController.popBackStack() }) {
-                                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                                Icon(
+                                    Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = "Back"
+                                )
                             }
                         },
                         actions = {
@@ -87,18 +90,36 @@ fun CategoryDetailView(
                                         val newCategory = it.copy(
                                             name = nameText.trim(),
                                             description = descriptionText.trim(),
-                                            lastUpdated = System.currentTimeMillis()
+                                            lastUpdated = System.currentTimeMillis(),
                                         )
-                                        DocrDatabase.getInstance(context)
-                                            .dao()
-                                            .updateCategory(newCategory)
+                                        viewModel.updateCategory(context, newCategory)
+                                        navController.popBackStack()
                                     }
-                                    navController.navigate(Screen.Home.route)
                                 },
                                 enabled = didChange
                             )
                             {
-                                Icon(Icons.Default.Done, contentDescription = "Save")
+                                if (didChange) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .background(
+                                                color = MaterialTheme.colorScheme.primaryContainer,
+                                                shape = MaterialTheme.shapes.small,
+                                            )
+                                    ) {
+                                        Icon(
+                                            Icons.Default.Done,
+                                            contentDescription = "Save",
+                                            modifier = Modifier.align(Alignment.Center)
+                                        )
+                                    }
+                                } else {
+                                    Icon(
+                                        Icons.Default.Done,
+                                        contentDescription = "Save",
+                                    )
+                                }
                             }
                             IconButton(onClick = {
                                 viewModel.viewModelScope.launch {

@@ -10,7 +10,7 @@ import com.torfstack.docr.persistence.DocrDatabase
 class CategoryViewModel(application: Application) : AndroidViewModel(application) {
     val uiState: LiveData<List<CategoryEntity>> =
         DocrDatabase.getInstance(application.applicationContext)
-            .liveDataDao()
+            .dao()
             .getAllCategories()
 
     init {

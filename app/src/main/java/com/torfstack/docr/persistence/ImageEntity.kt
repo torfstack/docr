@@ -4,6 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
+import com.torfstack.docr.crypto.DocrCrypto
 
 @Entity(
     tableName = "image",
@@ -16,10 +17,22 @@ import androidx.room.PrimaryKey
 )
 data class ImageEntity(
     @PrimaryKey val uid: String,
-    @ColumnInfo(name = "data", typeAffinity = ColumnInfo.BLOB) val data: ByteArray,
-    @ColumnInfo(name = "downscaled", typeAffinity = ColumnInfo.BLOB) val downscaled: ByteArray,
+    @ColumnInfo(name = "data", typeAffinity = ColumnInfo.BLOB) internal val dataInternal: ByteArray,
+    @ColumnInfo(
+        name = "downscaled",
+        typeAffinity = ColumnInfo.BLOB
+    ) internal val downscaledInternal: ByteArray,
     @ColumnInfo(name = "category") val category: String
 ) {
+
+    val data by lazy {
+        DocrCrypto.decrypt(dataInternal)
+    }
+
+    val downscaled by lazy {
+        DocrCrypto.decrypt(downscaledInternal)
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

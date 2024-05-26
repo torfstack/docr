@@ -20,18 +20,28 @@ class CategoryDetailViewModel(application: Application, categoryId: String) :
 
     val category: LiveData<CategoryEntity> =
         DocrDatabase.getInstance(application.applicationContext)
-            .liveDataDao()
+            .dao()
             .getCategoryById(categoryId)
 
     val images: LiveData<List<ImageEntity>> =
         DocrDatabase.getInstance(application.applicationContext)
-            .liveDataDao()
+            .dao()
             .getImagesForCategory(categoryId)
+
+    init {
+        Log.i("CategoryDetailViewModel", "initialized view model")
+    }
 
     suspend fun deleteCategory(context: Context, category: CategoryEntity) {
         DocrDatabase.getInstance(context)
             .dao()
             .deleteCategory(category)
+    }
+
+    suspend fun updateCategory(context: Context, category: CategoryEntity) {
+        DocrDatabase.getInstance(context)
+            .dao()
+            .updateCategory(category)
     }
 
     suspend fun shareCategory(context: Context, category: CategoryEntity) {

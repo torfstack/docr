@@ -3,8 +3,7 @@ package com.torfstack.docr.persistence
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import androidx.room.TypeConverter
-import java.util.Date
+import com.torfstack.docr.crypto.DocrCrypto
 
 @Entity(tableName = "category")
 data class CategoryEntity(
@@ -13,8 +12,14 @@ data class CategoryEntity(
     @ColumnInfo(name = "description") val description: String,
     @ColumnInfo(name = "created") val created: Long,
     @ColumnInfo(name = "last_updated") val lastUpdated: Long,
-    @ColumnInfo(name = "thumbnail") val thumbnail: ByteArray
+    @ColumnInfo(name = "thumbnail") internal val thumbnailInternal: ByteArray,
+    @ColumnInfo(name = "version") internal val version: Int
 ) {
+
+    val thumbnail by lazy {
+        DocrCrypto.decrypt(thumbnailInternal)
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -26,6 +31,7 @@ data class CategoryEntity(
         if (description != other.description) return false
         if (created != other.created) return false
         if (lastUpdated != other.lastUpdated) return false
+        if (version != other.version) return false
 
         return true
     }
@@ -36,19 +42,7 @@ data class CategoryEntity(
         result = 31 * result + description.hashCode()
         result = 31 * result + created.hashCode()
         result = 31 * result + lastUpdated.hashCode()
+        result = 31 * result + version.hashCode()
         return result
-    }
-}
-
-
-class Converters {
-    @TypeConverter
-    fun fromTimestamp(value: Long?): Date? {
-        return value?.let { Date(it) }
-    }
-
-    @TypeConverter
-    fun dateToTimestamp(date: Date?): Long? {
-        return date?.time
     }
 }

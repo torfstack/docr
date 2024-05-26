@@ -40,7 +40,7 @@ import java.util.UUID
 @Composable
 fun CategoryView(navController: NavHostController, viewModel: CategoryViewModel) {
     val activity = LocalContext.current.findActivity()!!
-    val uiState by viewModel.uiState.observeAsState(initial = emptyList())
+    val categories by viewModel.uiState.observeAsState(initial = emptyList())
 
     val scannerLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
@@ -64,7 +64,8 @@ fun CategoryView(navController: NavHostController, viewModel: CategoryViewModel)
                             "Description",
                             created = System.currentTimeMillis(),
                             lastUpdated = System.currentTimeMillis(),
-                            thumbnail = thumbnailBytes
+                            thumbnailInternal = thumbnailBytes,
+                            version = 0
                         )
 
                         val images = mutableListOf<ImageEntity>()
@@ -73,7 +74,14 @@ fun CategoryView(navController: NavHostController, viewModel: CategoryViewModel)
                             activity.contentResolver.openInputStream(page.imageUri)?.use { s ->
                                 val bytes = s.toByteArray()
                                 val downScaled = downscaled(bytes)
-                                images.add(ImageEntity(imageId, bytes, downScaled, categoryId))
+                                images.add(
+                                    ImageEntity(
+                                        imageId,
+                                        bytes,
+                                        downScaled,
+                                        categoryId
+                                    )
+                                )
                             }
                         }
 
@@ -123,10 +131,12 @@ fun CategoryView(navController: NavHostController, viewModel: CategoryViewModel)
                     .background(MaterialTheme.colorScheme.background)
                     .padding(innerPadding)
             ) {
-                val categories = uiState
                 categories.forEach {
                     Category(category = it) {
-                        navController.navigate(Screen.Category.withArgs(it.uid))
+                        navController.navigate(
+                            Screen.Category
+                                .withArgs(it.uid, it.version)
+                        )
                     }
                 }
             }
