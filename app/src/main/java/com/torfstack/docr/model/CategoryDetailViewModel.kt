@@ -10,9 +10,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.map
 import com.torfstack.docr.DocrFileProvider
-import com.torfstack.docr.crypto.DocrCrypto
 import com.torfstack.docr.persistence.CategoryEntity
 import com.torfstack.docr.persistence.DocrDatabase
 import com.torfstack.docr.persistence.ImageEntity
@@ -22,38 +20,28 @@ class CategoryDetailViewModel(application: Application, categoryId: String) :
 
     val category: LiveData<CategoryEntity> =
         DocrDatabase.getInstance(application.applicationContext)
-            .liveDataDao()
+            .dao()
             .getCategoryById(categoryId)
-            .map {
-                CategoryEntity(
-                    it.uid,
-                    it.name,
-                    it.description,
-                    it.created,
-                    it.lastUpdated,
-                    DocrCrypto.decrypt(it.thumbnail)
-                )
-            }
 
     val images: LiveData<List<ImageEntity>> =
         DocrDatabase.getInstance(application.applicationContext)
-            .liveDataDao()
+            .dao()
             .getImagesForCategory(categoryId)
-            .map {
-                it.map { image ->
-                    ImageEntity(
-                        image.uid,
-                        DocrCrypto.decrypt(image.data),
-                        DocrCrypto.decrypt(image.downscaled),
-                        image.category
-                    )
-                }
-            }
+
+    init {
+        Log.i("CategoryDetailViewModel", "initialized view model")
+    }
 
     suspend fun deleteCategory(context: Context, category: CategoryEntity) {
         DocrDatabase.getInstance(context)
             .dao()
             .deleteCategory(category)
+    }
+
+    suspend fun updateCategory(context: Context, category: CategoryEntity) {
+        DocrDatabase.getInstance(context)
+            .dao()
+            .updateCategory(category)
     }
 
     suspend fun shareCategory(context: Context, category: CategoryEntity) {

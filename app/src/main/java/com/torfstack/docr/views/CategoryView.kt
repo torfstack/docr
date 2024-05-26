@@ -23,7 +23,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult
-import com.torfstack.docr.crypto.DocrCrypto
 import com.torfstack.docr.document.captureImageAndScan
 import com.torfstack.docr.model.CategoryViewModel
 import com.torfstack.docr.persistence.CategoryEntity
@@ -41,7 +40,7 @@ import java.util.UUID
 @Composable
 fun CategoryView(navController: NavHostController, viewModel: CategoryViewModel) {
     val activity = LocalContext.current.findActivity()!!
-    val uiState by viewModel.uiState.observeAsState(initial = emptyList())
+    val categories by viewModel.uiState.observeAsState(initial = emptyList())
 
     val scannerLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
@@ -65,7 +64,7 @@ fun CategoryView(navController: NavHostController, viewModel: CategoryViewModel)
                             "Description",
                             created = System.currentTimeMillis(),
                             lastUpdated = System.currentTimeMillis(),
-                            thumbnail = DocrCrypto.encrypt(thumbnailBytes)
+                            thumbnailInternal = thumbnailBytes
                         )
 
                         val images = mutableListOf<ImageEntity>()
@@ -77,8 +76,8 @@ fun CategoryView(navController: NavHostController, viewModel: CategoryViewModel)
                                 images.add(
                                     ImageEntity(
                                         imageId,
-                                        DocrCrypto.encrypt(bytes),
-                                        DocrCrypto.encrypt(downScaled),
+                                        bytes,
+                                        downScaled,
                                         categoryId
                                     )
                                 )
@@ -131,7 +130,6 @@ fun CategoryView(navController: NavHostController, viewModel: CategoryViewModel)
                     .background(MaterialTheme.colorScheme.background)
                     .padding(innerPadding)
             ) {
-                val categories = uiState
                 categories.forEach {
                     Category(category = it) {
                         navController.navigate(Screen.Category.withArgs(it.uid))

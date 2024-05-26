@@ -32,21 +32,20 @@ class DocrCrypto {
         }
 
         private fun createEncryptCipher(key: Key): Cipher {
-            return Cipher.getInstance(
-                "${KeyProperties.KEY_ALGORITHM_AES}/" +
-                        "${KeyProperties.BLOCK_MODE_GCM}/${KeyProperties.ENCRYPTION_PADDING_NONE}"
-            ).apply {
+            return Cipher.getInstance(cipherTransform()).apply {
                 init(Cipher.ENCRYPT_MODE, key)
             }
         }
 
         private fun createDecryptCipher(key: Key, nonce: ByteArray): Cipher {
-            return Cipher.getInstance(
-                "${KeyProperties.KEY_ALGORITHM_AES}/" +
-                        "${KeyProperties.BLOCK_MODE_GCM}/${KeyProperties.ENCRYPTION_PADDING_NONE}"
-            ).apply {
+            return Cipher.getInstance(cipherTransform()).apply {
                 init(Cipher.DECRYPT_MODE, key, GCMParameterSpec(128, nonce))
             }
+        }
+
+        private fun cipherTransform(): String {
+            return "${KeyProperties.KEY_ALGORITHM_AES}/" +
+                    "${KeyProperties.BLOCK_MODE_GCM}/${KeyProperties.ENCRYPTION_PADDING_NONE}"
         }
 
         private fun getKey(): Key {

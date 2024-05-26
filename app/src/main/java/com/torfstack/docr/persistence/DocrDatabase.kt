@@ -4,13 +4,10 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import androidx.room.TypeConverters
 
 @Database(entities = [CategoryEntity::class, ImageEntity::class], version = 1)
-@TypeConverters(Converters::class)
 abstract class DocrDatabase : RoomDatabase() {
-    abstract fun dao(): CategoryImageDao
-    abstract fun liveDataDao(): LiveDataDao
+    abstract fun dao(): Dao
 
     companion object {
         @Volatile
