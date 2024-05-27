@@ -32,6 +32,10 @@ fun ByteArray.toImageBitmap(): ImageBitmap {
     return bitmap.asImageBitmap()
 }
 
+fun ByteArray.toBitmap(): Bitmap {
+    return BitmapFactory.decodeByteArray(this, 0, this.size)
+}
+
 suspend fun Context.getCameraProvider(): ProcessCameraProvider =
     suspendCoroutine { continuation ->
         ProcessCameraProvider.getInstance(this).also { cameraProvider ->
@@ -81,4 +85,10 @@ fun imageCollection(): Uri {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) MediaStore.Images.Media.getContentUri(
         MediaStore.VOLUME_EXTERNAL
     ) else MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+}
+
+fun Bitmap.bytes(): ByteArray {
+    val stream = ByteArrayOutputStream()
+    this.compress(Bitmap.CompressFormat.JPEG, 100, stream)
+    return stream.toByteArray()
 }

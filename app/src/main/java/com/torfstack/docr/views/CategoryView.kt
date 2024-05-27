@@ -33,6 +33,7 @@ import com.torfstack.docr.ui.theme.DocRTheme
 import com.torfstack.docr.util.downscaled
 import com.torfstack.docr.util.findActivity
 import com.torfstack.docr.util.thumbnail
+import com.torfstack.docr.util.toBitmap
 import com.torfstack.docr.util.toByteArray
 import kotlinx.coroutines.launch
 import java.util.UUID
@@ -64,7 +65,7 @@ fun CategoryView(navController: NavHostController, viewModel: CategoryViewModel)
                             "Description",
                             created = System.currentTimeMillis(),
                             lastUpdated = System.currentTimeMillis(),
-                            thumbnailInternal = thumbnailBytes,
+                            thumbnail = thumbnailBytes.toBitmap(),
                             version = 0
                         )
 
@@ -77,8 +78,8 @@ fun CategoryView(navController: NavHostController, viewModel: CategoryViewModel)
                                 images.add(
                                     ImageEntity(
                                         imageId,
-                                        bytes,
-                                        downScaled,
+                                        bytes.toBitmap(),
+                                        downScaled.toBitmap(),
                                         categoryId
                                     )
                                 )

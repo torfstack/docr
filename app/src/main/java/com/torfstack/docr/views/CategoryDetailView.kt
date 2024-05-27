@@ -36,6 +36,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewModelScope
@@ -44,7 +45,6 @@ import com.torfstack.docr.model.CategoryDetailViewModel
 import com.torfstack.docr.persistence.CategoryEntity
 import com.torfstack.docr.ui.theme.DocRTheme
 import com.torfstack.docr.ui.theme.Typography
-import com.torfstack.docr.util.toImageBitmap
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -93,8 +93,8 @@ fun CategoryDetailView(
                                             lastUpdated = System.currentTimeMillis(),
                                         )
                                         viewModel.updateCategory(context, newCategory)
-                                        navController.popBackStack()
                                     }
+                                    navController.popBackStack()
                                 },
                                 enabled = didChange
                             )
@@ -195,7 +195,7 @@ fun CategoryDetailView(
                                 modifier = Modifier
                                     .align(Alignment.CenterHorizontally)
                                     .padding(8.dp),
-                                bitmap = it.downscaled.toImageBitmap(),
+                                bitmap = it.downscaled.asImageBitmap(),
                                 contentDescription = "Category Image"
                             )
                         }
