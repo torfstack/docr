@@ -1,5 +1,6 @@
 package com.torfstack.docr.ui.components
 
+import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -39,7 +40,11 @@ fun Category(category: CategoryEntity, onClick: () -> Unit) {
             Box(modifier = Modifier.padding(16.dp)) {
                 Row {
                     Image(
-                        bitmap = category.thumbnail.asImageBitmap(),
+                        bitmap = BitmapFactory.decodeByteArray(
+                            category.thumbnail,
+                            0,
+                            category.thumbnail.size
+                        ).asImageBitmap(),
                         contentDescription = "thumbnail",
                         modifier = Modifier
                             .height(64.dp)

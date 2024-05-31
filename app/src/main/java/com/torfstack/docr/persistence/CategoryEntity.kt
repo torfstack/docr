@@ -1,9 +1,9 @@
 package com.torfstack.docr.persistence
 
-import android.graphics.Bitmap
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.torfstack.docr.crypto.DocrCrypto
 
 @Entity(tableName = "category")
 data class CategoryEntity(
@@ -12,9 +12,13 @@ data class CategoryEntity(
     @ColumnInfo(name = "description") val description: String,
     @ColumnInfo(name = "created") val created: Long,
     @ColumnInfo(name = "last_updated") val lastUpdated: Long,
-    @ColumnInfo(name = "thumbnail") val thumbnail: Bitmap,
+    @ColumnInfo(name = "thumbnail") internal val thumbnailInternal: ByteArray,
     @ColumnInfo(name = "version") internal val version: Int
 ) {
+
+    val thumbnail by lazy {
+        DocrCrypto.decrypt(thumbnailInternal)
+    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

@@ -6,7 +6,6 @@ import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
@@ -33,7 +32,6 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun Navigation() {
-        val context = LocalContext.current
         val owner = LocalViewModelStoreOwner.current
         val navController = rememberNavController()
         NavHost(
@@ -65,10 +63,7 @@ class MainActivity : ComponentActivity() {
             }
         ) {
             composable(route = Screen.Home.route) {
-                val model: CategoryViewModel = viewModel(
-                    viewModelStoreOwner = owner!!,
-                    factory = CategoryViewModel.Factory(context)
-                )
+                val model: CategoryViewModel = viewModel(owner!!)
                 CategoryView(
                     navController = navController,
                     viewModel = model
@@ -83,11 +78,11 @@ class MainActivity : ComponentActivity() {
             ) {
                 val id = it.arguments?.getString("categoryId")!!
                 val version = it.arguments?.getInt("version")!!
-                val model: CategoryDetailViewModel = viewModel<CategoryDetailViewModel>(
+                val model: CategoryDetailViewModel = viewModel(
                     viewModelStoreOwner = owner!!,
                     key = "$id/$version",
                     factory = CategoryDetailViewModel.Factory(
-                        context,
+                        application,
                         id,
                     ),
                 )
