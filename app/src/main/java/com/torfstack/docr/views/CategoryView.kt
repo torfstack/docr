@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult
+import com.torfstack.docr.DocrFileManager
 import com.torfstack.docr.document.captureImageAndScan
 import com.torfstack.docr.model.CategoryViewModel
 import com.torfstack.docr.persistence.CategoryEntity
@@ -58,13 +59,19 @@ fun CategoryView(navController: NavHostController, viewModel: CategoryViewModel)
                             } ?: return@launch
 
                         val categoryId = UUID.randomUUID().toString()
+
+                        DocrFileManager().insertThumbnailToFiles(
+                            activity,
+                            thumbnailBytes,
+                            categoryId,
+                        )
+
                         val newCategory = CategoryEntity(
                             categoryId,
                             "Category",
                             "Description",
                             created = System.currentTimeMillis(),
                             lastUpdated = System.currentTimeMillis(),
-                            thumbnailInternal = thumbnailBytes,
                             version = 0
                         )
 
@@ -74,11 +81,23 @@ fun CategoryView(navController: NavHostController, viewModel: CategoryViewModel)
                             activity.contentResolver.openInputStream(page.imageUri)?.use { s ->
                                 val bytes = s.toByteArray()
                                 val downScaled = downscaled(bytes)
+
+                                DocrFileManager().insertToFiles(
+                                    activity,
+                                    bytes,
+                                    categoryId,
+                                    imageId,
+                                )
+                                DocrFileManager().insertDownscaledToFiles(
+                                    activity,
+                                    downScaled,
+                                    categoryId,
+                                    imageId,
+                                )
+
                                 images.add(
                                     ImageEntity(
                                         imageId,
-                                        bytes,
-                                        downScaled,
                                         categoryId
                                     )
                                 )

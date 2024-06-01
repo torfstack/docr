@@ -24,7 +24,7 @@
         </activity>
 
         <provider
-            android:name="com.torfstack.docr.DocrFileProvider"
+            android:name="com.torfstack.docr.DocrFileManager"
             android:authorities="${applicationId}.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">

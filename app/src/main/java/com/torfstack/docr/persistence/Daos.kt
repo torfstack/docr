@@ -7,7 +7,6 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
-import com.torfstack.docr.crypto.DocrCrypto
 
 @Dao
 interface Dao : LiveDataDao, CategoryImageDao
@@ -27,12 +26,7 @@ interface LiveDataDao {
 @Dao
 interface CategoryImageDao {
     @Insert
-    suspend fun insertCategoryInternal(category: CategoryEntity)
-
-    @Insert
-    suspend fun insertCategory(category: CategoryEntity) {
-        insertCategoryInternal(category.copy(thumbnailInternal = DocrCrypto.encrypt(category.thumbnailInternal)))
-    }
+    suspend fun insertCategory(category: CategoryEntity)
 
     @Update
     suspend fun updateCategoryInternal(category: CategoryEntity)
@@ -43,17 +37,7 @@ interface CategoryImageDao {
     }
 
     @Insert
-    suspend fun insertImageInternal(image: ImageEntity)
-
-    @Insert
-    suspend fun insertImage(image: ImageEntity) {
-        insertImageInternal(
-            image.copy(
-                dataInternal = DocrCrypto.encrypt(image.dataInternal),
-                downscaledInternal = DocrCrypto.encrypt(image.downscaledInternal)
-            )
-        )
-    }
+    suspend fun insertImage(image: ImageEntity)
 
     @Query("SELECT * FROM image WHERE category = :categoryId")
     suspend fun imagesForCategory(categoryId: String): List<ImageEntity>

@@ -44,7 +44,6 @@ import com.torfstack.docr.model.CategoryDetailViewModel
 import com.torfstack.docr.persistence.CategoryEntity
 import com.torfstack.docr.ui.theme.DocRTheme
 import com.torfstack.docr.ui.theme.Typography
-import com.torfstack.docr.util.toImageBitmap
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -93,8 +92,8 @@ fun CategoryDetailView(
                                             lastUpdated = System.currentTimeMillis(),
                                         )
                                         viewModel.updateCategory(context, newCategory)
-                                        navController.popBackStack()
                                     }
+                                    navController.popBackStack()
                                 },
                                 enabled = didChange
                             )
@@ -195,7 +194,7 @@ fun CategoryDetailView(
                                 modifier = Modifier
                                     .align(Alignment.CenterHorizontally)
                                     .padding(8.dp),
-                                bitmap = it.downscaled.toImageBitmap(),
+                                bitmap = it.downscaledData(context),
                                 contentDescription = "Category Image"
                             )
                         }
@@ -227,9 +226,9 @@ fun DeleteDialog(
                 onClick = {
                     viewModel.viewModelScope.launch {
                         open.value = false
-                        navController.popBackStack()
                         viewModel.deleteCategory(context, entity)
                     }
+                    navController.popBackStack()
                 },
             ) {
                 Text("Delete")

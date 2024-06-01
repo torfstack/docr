@@ -4,7 +4,6 @@ import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import java.security.Key
 import java.security.KeyStore
-import java.security.SecureRandom
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.spec.GCMParameterSpec
@@ -13,21 +12,26 @@ class DocrCrypto {
 
     companion object {
 
+        private val ENCRYPTION_HEADER = byteArrayOf(0x44, 0x4f, 0x43, 0x52)
+        private val ENCRYPTION_VERSION = byteArrayOf(0x00, 0x00, 0x00, 0x01)
+
         private var key: Key? = null
 
         fun encrypt(data: ByteArray): ByteArray {
-            val nonce = ByteArray(12)
-            SecureRandom().nextBytes(nonce)
             createEncryptCipher(getKey()).run {
                 val encrypted = doFinal(data)
-                return iv + encrypted
+                return ENCRYPTION_HEADER + ENCRYPTION_VERSION + iv + encrypted
             }
         }
 
         fun decrypt(data: ByteArray): ByteArray {
-            val nonce = data.sliceArray(0 until 12)
+            val header = data.sliceArray(0 until 4)
+            if (!header.contentEquals(ENCRYPTION_HEADER)) {
+                throw IllegalArgumentException("Invalid encryption header")
+            }
+            val nonce = data.sliceArray(8 until 20)
             createDecryptCipher(getKey(), nonce).run {
-                return doFinal(data.sliceArray(12 until data.size))
+                return doFinal(data.sliceArray(20 until data.size))
             }
         }
 
