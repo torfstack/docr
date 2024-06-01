@@ -1,10 +1,15 @@
 package com.torfstack.docr.persistence
 
+import android.content.Context
+import android.graphics.BitmapFactory
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Ignore
 import androidx.room.PrimaryKey
-import com.torfstack.docr.crypto.DocrCrypto
+import com.torfstack.docr.DocrFileManager
 
 @Entity(
     tableName = "image",
@@ -17,20 +22,29 @@ import com.torfstack.docr.crypto.DocrCrypto
 )
 data class ImageEntity(
     @PrimaryKey val uid: String,
-    @ColumnInfo(name = "data", typeAffinity = ColumnInfo.BLOB) internal val dataInternal: ByteArray,
-    @ColumnInfo(
-        name = "downscaled",
-        typeAffinity = ColumnInfo.BLOB
-    ) internal val downscaledInternal: ByteArray,
     @ColumnInfo(name = "category") val category: String
 ) {
 
-    val data by lazy {
-        DocrCrypto.decrypt(dataInternal)
+    @Ignore
+    private var data: ImageBitmap? = null
+
+    @Ignore
+    private var downscaledData: ImageBitmap? = null
+
+    fun data(context: Context): ImageBitmap {
+        if (data == null) {
+            val bytes = DocrFileManager().getFromFiles(context, this)
+            data = BitmapFactory.decodeByteArray(bytes, 0, bytes.size).asImageBitmap()
+        }
+        return data!!
     }
 
-    val downscaled by lazy {
-        DocrCrypto.decrypt(downscaledInternal)
+    fun downscaledData(context: Context): ImageBitmap {
+        if (downscaledData == null) {
+            val bytes = DocrFileManager().getDownscaledFromFiles(context, this)
+            downscaledData = BitmapFactory.decodeByteArray(bytes, 0, bytes.size).asImageBitmap()
+        }
+        return downscaledData!!
     }
 
     override fun equals(other: Any?): Boolean {
@@ -40,14 +54,14 @@ data class ImageEntity(
         other as ImageEntity
 
         if (uid != other.uid) return false
-        if (!data.contentEquals(other.data)) return false
+        if (category != other.category) return false
 
         return true
     }
 
     override fun hashCode(): Int {
         var result = uid.hashCode()
-        result = 31 * result + data.contentHashCode()
+        result = 31 * result + category.hashCode()
         return result
     }
 }

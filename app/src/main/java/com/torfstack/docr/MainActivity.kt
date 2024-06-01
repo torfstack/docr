@@ -24,7 +24,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        DocrFileProvider().clearCache(this)
+        DocrFileManager().clearCache(this)
         setContent {
             Navigation()
         }
@@ -63,7 +63,10 @@ class MainActivity : ComponentActivity() {
             }
         ) {
             composable(route = Screen.Home.route) {
-                val model: CategoryViewModel = viewModel(owner!!)
+                val model: CategoryViewModel = viewModel(
+                    viewModelStoreOwner = owner!!,
+                    factory = CategoryViewModel.Factory(application),
+                )
                 CategoryView(
                     navController = navController,
                     viewModel = model

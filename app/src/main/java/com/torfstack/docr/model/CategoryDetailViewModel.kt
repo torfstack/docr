@@ -1,30 +1,30 @@
 package com.torfstack.docr.model
 
-import android.app.Application
 import android.content.ClipData
 import android.content.Context
 import android.content.Intent
 import android.util.Log
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.torfstack.docr.DocrFileProvider
+import com.torfstack.docr.DocrFileManager
 import com.torfstack.docr.persistence.CategoryEntity
 import com.torfstack.docr.persistence.DocrDatabase
 import com.torfstack.docr.persistence.ImageEntity
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 
-class CategoryDetailViewModel(application: Application, categoryId: String) :
-    AndroidViewModel(application) {
+class CategoryDetailViewModel(context: Context, categoryId: String) :
+    ViewModel(viewModelScope = CoroutineScope(Dispatchers.IO)) {
 
     val category: LiveData<CategoryEntity> =
-        DocrDatabase.getInstance(application.applicationContext)
+        DocrDatabase.getInstance(context)
             .dao()
             .getCategoryById(categoryId)
 
     val images: LiveData<List<ImageEntity>> =
-        DocrDatabase.getInstance(application.applicationContext)
+        DocrDatabase.getInstance(context)
             .dao()
             .getImagesForCategory(categoryId)
 
@@ -36,6 +36,7 @@ class CategoryDetailViewModel(application: Application, categoryId: String) :
         DocrDatabase.getInstance(context)
             .dao()
             .deleteCategory(category)
+        DocrFileManager().removeCategory(context, category)
     }
 
     suspend fun updateCategory(context: Context, category: CategoryEntity) {
@@ -60,7 +61,7 @@ class CategoryDetailViewModel(application: Application, categoryId: String) :
         share.setType("image/jpeg")
 
         val uris = images.map { image ->
-            DocrFileProvider().insertToCache(context, image)
+            DocrFileManager().insertToCache(context, image)
         }
 
         if (uris.size > 1) {
@@ -76,11 +77,11 @@ class CategoryDetailViewModel(application: Application, categoryId: String) :
         ContextCompat.startActivity(context, Intent.createChooser(share, "Share Image"), null)
     }
 
-    class Factory(private val application: Application, private val categoryId: String) :
-        ViewModelProvider.AndroidViewModelFactory(application) {
+    class Factory(private val context: Context, private val categoryId: String) :
+        ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             return CategoryDetailViewModel(
-                application,
+                context,
                 categoryId,
             ) as T
         }
