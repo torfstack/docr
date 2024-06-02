@@ -4,6 +4,8 @@ Android app for document scanning using Google MLKit
 
 ### Screenshots
 
-![Screenshot 1](documents.png)
-![Screenshot 2](document_detail.png)
-![Screenshot 3](scanning.png)
+<p float="left">
+  <img src="/documents.png" width="200" />
+  <img src="/document_detail.png" width="200" /> 
+  <img src="/scanning.png" width="200" />
+</p>
