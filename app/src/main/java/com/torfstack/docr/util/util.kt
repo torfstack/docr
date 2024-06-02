@@ -49,7 +49,7 @@ fun Context.findActivity(): ComponentActivity? = when (this) {
 
 fun Bitmap.thumbnail(): Bitmap {
     val aspectRatio = width.toFloat() / height.toFloat()
-    val thumbnailWidth = 128
+    val thumbnailWidth = 256
     val thumbnailHeight = (thumbnailWidth / aspectRatio).toInt()
     return Bitmap.createScaledBitmap(this, thumbnailWidth, thumbnailHeight, false)
 }
