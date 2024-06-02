@@ -4,9 +4,11 @@ import android.app.Activity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.BottomAppBar
@@ -145,16 +147,17 @@ fun CategoryView(navController: NavHostController, viewModel: CategoryViewModel)
                 }
             }
         ) { innerPadding ->
-            Column(
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
                 modifier = Modifier
                     .background(MaterialTheme.colorScheme.background)
                     .padding(innerPadding)
             ) {
-                categories.forEach {
-                    Category(category = it) {
+                itemsIndexed(categories) { _, category ->
+                    Category(category = category) {
                         navController.navigate(
                             Screen.Category
-                                .withArgs(it.uid, it.version)
+                                .withArgs(category.uid, category.version)
                         )
                     }
                 }
