@@ -85,6 +85,10 @@ class DocrAuth {
                 confirmButton = {
                     Button(
                         onClick = {
+                            if (password.isEmpty()) {
+                                // TODO: show error message
+                                return@Button
+                            }
                             val salt = ByteArray(16)
                             SecureRandom().nextBytes(salt)
                             val pbkfd2 = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1")
