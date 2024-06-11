@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -128,6 +129,21 @@ fun CategoryView(navController: NavHostController, viewModel: CategoryViewModel)
                 BottomAppBar(
                     containerColor = MaterialTheme.colorScheme.surface,
                 ) {
+                    IconButton(
+                        modifier = Modifier
+                            .padding(start = 32.dp)
+                            .background(
+                                color = MaterialTheme.colorScheme.secondaryContainer,
+                                shape = MaterialTheme.shapes.small,
+                            ),
+                        onClick = {
+                            navController.navigate(Screen.Options.route)
+                        }) {
+                        Icon(
+                            Icons.Default.Settings,
+                            contentDescription = "Settings"
+                        )
+                    }
                     Spacer(modifier = Modifier.weight(1f))
                     IconButton(
                         modifier = Modifier

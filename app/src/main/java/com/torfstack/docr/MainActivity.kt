@@ -18,6 +18,7 @@ import com.torfstack.docr.model.CategoryViewModel
 import com.torfstack.docr.views.CategoryDetailView
 import com.torfstack.docr.views.CategoryView
 import com.torfstack.docr.views.Screen
+import com.torfstack.docr.views.SettingsView
 
 
 class MainActivity : ComponentActivity() {
@@ -93,6 +94,9 @@ class MainActivity : ComponentActivity() {
                     navController = navController,
                     viewModel = model
                 )
+            }
+            composable(route = Screen.Options.route) {
+                SettingsView()
             }
         }
     }
