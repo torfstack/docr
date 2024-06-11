@@ -35,7 +35,6 @@ import com.torfstack.docr.persistence.ImageEntity
 import com.torfstack.docr.ui.components.Category
 import com.torfstack.docr.ui.theme.DocRTheme
 import com.torfstack.docr.util.downscaled
-import com.torfstack.docr.util.findActivity
 import com.torfstack.docr.util.thumbnail
 import com.torfstack.docr.util.toByteArray
 import kotlinx.coroutines.launch
@@ -43,7 +42,7 @@ import java.util.UUID
 
 @Composable
 fun CategoryView(navController: NavHostController, viewModel: CategoryViewModel) {
-    val activity = LocalContext.current.findActivity()!!
+    val activity = LocalContext.current as Activity
     val categories by viewModel.uiState.observeAsState(initial = emptyList())
 
     val scannerLauncher =
