@@ -1,5 +1,6 @@
 [versions]
 agp = "8.4.1"
+biometric = "1.1.0"
 cameraVideo = "1.3.3"
 kotlin = "1.9.0"
 coreKtx = "1.13.1"
@@ -22,6 +23,7 @@ baselineprofile = "1.2.4"
 profileinstaller = "1.3.1"
 
 [libraries]
+androidx-biometric = { module = "androidx.biometric:biometric", version.ref = "biometric" }
 androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "cameraVideo" }
 androidx-camera-core = { module = "androidx.camera:camera-core", version.ref = "cameraVideo" }
 androidx-camera-extensions = { module = "androidx.camera:camera-extensions", version.ref = "cameraVideo" }

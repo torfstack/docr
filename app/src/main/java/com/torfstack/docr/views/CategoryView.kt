@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -34,7 +35,6 @@ import com.torfstack.docr.persistence.ImageEntity
 import com.torfstack.docr.ui.components.Category
 import com.torfstack.docr.ui.theme.DocRTheme
 import com.torfstack.docr.util.downscaled
-import com.torfstack.docr.util.findActivity
 import com.torfstack.docr.util.thumbnail
 import com.torfstack.docr.util.toByteArray
 import kotlinx.coroutines.launch
@@ -42,7 +42,7 @@ import java.util.UUID
 
 @Composable
 fun CategoryView(navController: NavHostController, viewModel: CategoryViewModel) {
-    val activity = LocalContext.current.findActivity()!!
+    val activity = LocalContext.current as Activity
     val categories by viewModel.uiState.observeAsState(initial = emptyList())
 
     val scannerLauncher =
@@ -128,6 +128,21 @@ fun CategoryView(navController: NavHostController, viewModel: CategoryViewModel)
                 BottomAppBar(
                     containerColor = MaterialTheme.colorScheme.surface,
                 ) {
+                    IconButton(
+                        modifier = Modifier
+                            .padding(start = 32.dp)
+                            .background(
+                                color = MaterialTheme.colorScheme.secondaryContainer,
+                                shape = MaterialTheme.shapes.small,
+                            ),
+                        onClick = {
+                            navController.navigate(Screen.Options.route)
+                        }) {
+                        Icon(
+                            Icons.Default.Settings,
+                            contentDescription = "Settings"
+                        )
+                    }
                     Spacer(modifier = Modifier.weight(1f))
                     IconButton(
                         modifier = Modifier

@@ -11,4 +11,6 @@ sealed class Screen(val route: String) {
             }
         }
     }
+
+    data object Options : Screen("options")
 }

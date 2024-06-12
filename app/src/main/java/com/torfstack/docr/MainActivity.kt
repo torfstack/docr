@@ -1,11 +1,11 @@
 package com.torfstack.docr
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
@@ -13,20 +13,49 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.torfstack.docr.auth.DocrAuth
+import com.torfstack.docr.auth.DocrBiometrics
 import com.torfstack.docr.model.CategoryDetailViewModel
 import com.torfstack.docr.model.CategoryViewModel
 import com.torfstack.docr.views.CategoryDetailView
 import com.torfstack.docr.views.CategoryView
 import com.torfstack.docr.views.Screen
+import com.torfstack.docr.views.SettingsView
 
 
-class MainActivity : ComponentActivity() {
+class MainActivity : FragmentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         DocrFileManager().clearCache(this)
-        setContent {
-            Navigation()
+        if (DocrAuth().isBiometricEnabled(this)) {
+            DocrBiometrics().authenticate(
+                this,
+                {
+                    setContent {
+                        Navigation()
+                    }
+                },
+                {
+                    finish()
+                },
+            )
+        } else if (DocrAuth().isPasswordEnabled(this)) {
+            setContent {
+                DocrAuth().AuthenticateWithPassword(
+                    fragmentActivity = this,
+                    onSuccess = {
+                        setContent {
+                            Navigation()
+                        }
+                    },
+                    onFailure = { finish() }
+                )
+            }
+        } else {
+            setContent {
+                Navigation()
+            }
         }
     }
 
@@ -93,6 +122,9 @@ class MainActivity : ComponentActivity() {
                     navController = navController,
                     viewModel = model
                 )
+            }
+            composable(route = Screen.Options.route) {
+                SettingsView()
             }
         }
     }
